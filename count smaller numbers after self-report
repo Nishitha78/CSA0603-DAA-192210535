@@ -1,0 +1,69 @@
+#include <stdio.h>
+#include <stdlib.h>
+typedef struct {
+    int value;
+    int index;
+} NumIndexPair;
+void merge(NumIndexPair* nums, int* counts, int left, int mid, int right) {
+    int n = right - left + 1;
+    NumIndexPair* temp = (NumIndexPair*)malloc(n * sizeof(NumIndexPair));
+    int i = left, j = mid + 1, k = 0, rightCount = 0;
+
+    while (i <= mid && j <= right) {
+        if (nums[i].value <= nums[j].value) {
+            counts[nums[i].index] += rightCount;
+            temp[k++] = nums[i++];
+        } else {
+            rightCount++;
+            temp[k++] = nums[j++];
+        }
+    }
+
+    while (i <= mid) {
+        counts[nums[i].index] += rightCount;
+        temp[k++] = nums[i++];
+    }
+
+    while (j <= right) {
+        temp[k++] = nums[j++];
+    }
+
+    for (int i = 0; i < n; i++) {
+        nums[left + i] = temp[i];
+    }
+
+    free(temp);
+}
+void mergeSort(NumIndexPair* nums, int* counts, int left, int right) {
+    if (left < right) {
+        int mid = left + (right - left) / 2;
+        mergeSort(nums, counts, left, mid);
+        mergeSort(nums, counts, mid + 1, right);
+        merge(nums, counts, left, mid, right);
+    }
+}
+int* countSmaller(int* nums, int numsSize, int* returnSize) {
+    *returnSize = numsSize;
+    int* counts = (int*)calloc(numsSize, sizeof(int));
+    NumIndexPair* numIndexPairs = (NumIndexPair*)malloc(numsSize * sizeof(NumIndexPair));
+    for (int i = 0; i < numsSize; i++) {
+        numIndexPairs[i].value = nums[i];
+        numIndexPairs[i].index = i;
+    }
+    mergeSort(numIndexPairs, counts, 0, numsSize - 1);
+    free(numIndexPairs);
+    return counts;
+}
+int main() {
+    int nums[] = {5, 2, 6, 1};
+    int numsSize = sizeof(nums) / sizeof(nums[0]);
+    int returnSize;
+    int* result = countSmaller(nums, numsSize, &returnSize);
+    printf("Result: ");
+    for (int i = 0; i < returnSize; i++) {
+        printf("%d ", result[i]);
+    }
+    printf("\n");
+    free(result);
+    return 0;
+}
